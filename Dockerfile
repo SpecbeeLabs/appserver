@@ -1,7 +1,6 @@
 FROM php:7.1-fpm
 
 ENV DEBIAN_FRONTEND noninteractive
-ENV DRUSH_VERSION 8.1.0
 
 # Common
 RUN apt-get update \
@@ -103,13 +102,6 @@ RUN git clone -b php7 https://github.com/php-memcached-dev/php-memcached \
 RUN curl -sS https://getcomposer.org/installer | php \
 	&& mv composer.phar /usr/local/bin/ \
 	&& ln -s /usr/local/bin/composer.phar /usr/local/bin/composer
-
-# Set the Drush version.
-RUN composer global require drush/drush:"$DRUSH_VERSION" --prefer-dist \
-    && rm -f /usr/local/bin/drush \
-    && ln -s ~/.composer/vendor/bin/drush /usr/local/bin/drush \
-    && drush core-status -y \
-    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /etc/supervisor
 
