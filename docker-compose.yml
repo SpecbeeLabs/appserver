@@ -1,0 +1,25 @@
+version: '3'
+services:
+  web:
+    build: .
+    restart: always
+    ports:
+      - "8000-8080:80"
+    volumes: 
+      - ./:/var/www
+    depends_on:
+      - database
+    networks:
+      - yoda
+  database:
+    image: mariadb
+    ports:
+      - "3310-3380:3306"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - yoda
+networks:
+  yoda:
+    driver: bridge
