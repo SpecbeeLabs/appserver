@@ -115,7 +115,7 @@ WORKDIR /etc/supervisor
 COPY ./templates/supervisord.conf conf.d/super.conf
 ENTRYPOINT ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/super.conf"]
 
-COPY ./templates/index.php /var/www/web/index.php
+COPY ./app/index.php /var/www/web/index.php
 
 WORKDIR /var/www/web
 

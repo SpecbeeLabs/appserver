@@ -6,7 +6,7 @@ services:
     ports:
       - "8000-8080:80"
     volumes: 
-      - ./:/var/www
+      - ./app:/var/www/web
     depends_on:
       - database
     networks:
