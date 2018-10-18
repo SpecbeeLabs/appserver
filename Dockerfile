@@ -16,13 +16,11 @@ RUN chmod -R 777 /tmp
 #Install nginx
 RUN apt-get update \
     && apt-get -y install \
-        nginx 
+        nginx
 
 WORKDIR /etc/nginx
 RUN rm -Rf conf.d/default.conf
-
 ADD ./templates/default.nginx.cnf sites-available/default
-
 EXPOSE 80 443
 
 # Locales
@@ -79,10 +77,6 @@ RUN apt-get install -y \
         xml \
         zip
 
-# Configure PHP-FPM
-
-# RUN sed -i 's/listen = .*/listen = '127.0.0.0:9000'/' /usr/local/etc/php-fpm.d/www.conf
-
 # Memcached
 # TODO PECL not available for PHP 7 yet, we must compile it.
 RUN apt-get install -y \
@@ -102,6 +96,9 @@ RUN git clone -b php7 https://github.com/php-memcached-dev/php-memcached \
 RUN curl -sS https://getcomposer.org/installer | php \
 	&& mv composer.phar /usr/local/bin/ \
 	&& ln -s /usr/local/bin/composer.phar /usr/local/bin/composer
+
+# Put a turbo on composer.
+RUN composer global require hirak/prestissimo
 
 # Set the Drush version.
 RUN composer global require drush/drush --prefer-dist \
