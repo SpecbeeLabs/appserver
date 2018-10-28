@@ -9,34 +9,18 @@ RUN apt-get update \
         openssl \
         supervisor \
         wget \
-	gnupg
+    gnupg
 
 RUN chmod -R 777 /tmp
 
 #Install nginx
 RUN apt-get update \
-    && apt-get -y install \
-        nginx
+    && apt-get -y install nginx
 
 WORKDIR /etc/nginx
 RUN rm -Rf conf.d/default.conf
 ADD ./templates/default.nginx.cnf sites-available/default
 EXPOSE 80 443
-
-# Locales
-RUN apt-get update \
-	&& apt-get install -y locales
-
-RUN dpkg-reconfigure locales \
-	&& locale-gen C.UTF-8 \
-	&& /usr/sbin/update-locale LANG=C.UTF-8
-
-RUN echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen \
-	&& locale-gen
-
-ENV LC_ALL C.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US.UTF-8
 
 # PHP
 RUN apt-get install -y \
@@ -53,19 +37,21 @@ RUN apt-get install -y \
     libpq-dev \
     libxml2-dev \
     mysql-client \
-    openssh-client \
     rsync \
     xfonts-base \
     xfonts-75dpi \
-    && pecl install imagick \
-    && docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
+    && docker-php-ext-configure \
+        gd --with-png-dir=/usr --with-jpeg-dir=/usr \
+        intl \
+        opcache \
+        zip \
     && docker-php-ext-enable imagick \
     && docker-php-ext-install \
-        bcmath \
-        bz2 \
         calendar \
         dom \
         gd \
+        imagick \
+        intl \
         json \
         mcrypt \
         mbstring \
@@ -75,13 +61,15 @@ RUN apt-get install -y \
         pdo_mysql \
         soap \
         xml \
-        zip
+        zip \
+     && echo default_mimetype="" > /usr/local/etc/php/conf.d/default_mimetype.ini
+COPY "memory-limit-php.ini" "/usr/local/etc/php/conf.d/memory-limit-php.ini"
 
 # Memcached
 # TODO PECL not available for PHP 7 yet, we must compile it.
 RUN apt-get install -y \
-	  libmemcached-dev \
-	  libmemcached11
+        libmemcached-dev \
+        libmemcached11
 
 WORKDIR /tmp
 RUN git clone -b php7 https://github.com/php-memcached-dev/php-memcached \
@@ -94,8 +82,8 @@ RUN git clone -b php7 https://github.com/php-memcached-dev/php-memcached \
 
 # Install composer and put binary into $PATH
 RUN curl -sS https://getcomposer.org/installer | php \
-	&& mv composer.phar /usr/local/bin/ \
-	&& ln -s /usr/local/bin/composer.phar /usr/local/bin/composer
+    && mv composer.phar /usr/local/bin/ \
+    && ln -s /usr/local/bin/composer.phar /usr/local/bin/composer
 
 # Put a turbo on composer.
 RUN composer global require hirak/prestissimo
