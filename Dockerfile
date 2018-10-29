@@ -8,10 +8,7 @@ RUN apt-get update \
         git \
         openssl \
         supervisor \
-        wget \
-    gnupg
-
-RUN chmod -R 777 /tmp
+        wget
 
 #Install nginx
 RUN apt-get update \
@@ -34,24 +31,27 @@ RUN apt-get install -y \
     libldap2-dev \
     libmagickwand-dev \
     libmcrypt-dev \
+    libmemcached-dev \
     libpq-dev \
     libxml2-dev \
     mysql-client \
+    openssh-client \
     rsync \
     xfonts-base \
     xfonts-75dpi \
-    && docker-php-ext-configure \
-        gd --with-png-dir=/usr --with-jpeg-dir=/usr \
-        intl \
-        opcache \
-        zip \
-    && docker-php-ext-enable imagick \
+    && pecl install \
+       imagick \
+       memcached \
+    && docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
+    && docker-php-ext-enable \
+        imagick \
+        memcached \
     && docker-php-ext-install \
+        bcmath \
+        bz2 \
         calendar \
         dom \
         gd \
-        imagick \
-        intl \
         json \
         mcrypt \
         mbstring \
@@ -62,23 +62,9 @@ RUN apt-get install -y \
         soap \
         xml \
         zip \
-     && echo default_mimetype="" > /usr/local/etc/php/conf.d/default_mimetype.ini
-COPY "memory-limit-php.ini" "/usr/local/etc/php/conf.d/memory-limit-php.ini"
+    && echo default_mimetype="" > /usr/local/etc/php/conf.d/default_mimetype.ini
 
-# Memcached
-# TODO PECL not available for PHP 7 yet, we must compile it.
-RUN apt-get install -y \
-        libmemcached-dev \
-        libmemcached11
-
-WORKDIR /tmp
-RUN git clone -b php7 https://github.com/php-memcached-dev/php-memcached \
-    && cd php-memcached \
-    && phpize \
-    && ./configure \
-    && make \
-    && cp /tmp/php-memcached/modules/memcached.so /usr/local/lib/php/extensions/no-debug-non-zts-20160303/memcached.so \
-    && docker-php-ext-enable memcached
+COPY "./templates/core-php.ini" "/usr/local/etc/php/conf.d/core-php.ini"
 
 # Install composer and put binary into $PATH
 RUN curl -sS https://getcomposer.org/installer | php \
@@ -87,13 +73,6 @@ RUN curl -sS https://getcomposer.org/installer | php \
 
 # Put a turbo on composer.
 RUN composer global require hirak/prestissimo
-
-# Set the Drush version.
-RUN composer global require drush/drush --prefer-dist \
-    && rm -f /usr/local/bin/drush \
-    && ln -s ~/.composer/vendor/bin/drush /usr/local/bin/drush \
-    && drush core-status -y \
-    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /etc/supervisor
 
@@ -107,3 +86,5 @@ WORKDIR /var/www/web
 RUN apt-get -y clean \
     && apt-get -y autoclean \
     && apt-get -y autoremove
+
+#RUN sed -e 's/max_execution_time = 30/max_execution_time = 120/' -i /etc/php/7.1/fpm/php.ini
