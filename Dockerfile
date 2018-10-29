@@ -24,10 +24,7 @@ RUN apt-get install -y \
     bzip2 \
     curl \
     imagemagick \
-    libbz2-dev \
-    libc-client2007e-dev \
     libjpeg-dev \
-    libkrb5-dev \
     libldap2-dev \
     libmagickwand-dev \
     libmcrypt-dev \
@@ -37,8 +34,6 @@ RUN apt-get install -y \
     mysql-client \
     openssh-client \
     rsync \
-    xfonts-base \
-    xfonts-75dpi \
     && pecl install \
        imagick \
        memcached \
@@ -47,8 +42,6 @@ RUN apt-get install -y \
         imagick \
         memcached \
     && docker-php-ext-install \
-        bcmath \
-        bz2 \
         calendar \
         dom \
         gd \
@@ -64,7 +57,7 @@ RUN apt-get install -y \
         zip \
     && echo default_mimetype="" > /usr/local/etc/php/conf.d/default_mimetype.ini
 
-COPY "./templates/core-php.ini" "/usr/local/etc/php/conf.d/core-php.ini"
+COPY ./templates/core-php.ini /usr/local/etc/php/conf.d/core-php.ini
 
 # Install composer and put binary into $PATH
 RUN curl -sS https://getcomposer.org/installer | php \
@@ -86,5 +79,3 @@ WORKDIR /var/www/web
 RUN apt-get -y clean \
     && apt-get -y autoclean \
     && apt-get -y autoremove
-
-#RUN sed -e 's/max_execution_time = 30/max_execution_time = 120/' -i /etc/php/7.1/fpm/php.ini
