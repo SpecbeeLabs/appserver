@@ -12,7 +12,7 @@ services:
     networks:
       - yoda
   database:
-      image: specbee/mariadb:latest
+    image: specbee/mariadb:latest
     ports:
       - "3310-3380:3306"
     restart: always
