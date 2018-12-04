@@ -1,6 +1,5 @@
-FROM php:7.1-fpm
-
-ENV DEBIAN_FRONTEND noninteractive
+ARG PHP_BASE_IMAGE
+FROM php:${PHP_BASE_IMAGE}
 
 # Common
 RUN apt-get update \
