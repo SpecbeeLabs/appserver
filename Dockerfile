@@ -1,6 +1,9 @@
 ARG PHP_BASE_IMAGE
 FROM php:${PHP_BASE_IMAGE}
 
+ARG PHP_BASE_IMAGE
+ENV PHP_VERSION=$PHP_BASE_IMAGE
+
 # Common
 RUN apt-get update \
     && apt-get install -y \
@@ -45,7 +48,6 @@ RUN apt-get install -y \
         dom \
         gd \
         json \
-        mcrypt \
         mbstring \
         mysqli \
         opcache \
@@ -55,6 +57,19 @@ RUN apt-get install -y \
         xml \
         zip \
     && echo default_mimetype="" > /usr/local/etc/php/conf.d/default_mimetype.ini
+
+RUN echo $PHP_VERSION
+
+# mcrypt moved to pecl in PHP 7.2
+RUN if [ "$PHP_VERSION" = "7.2-fpm" ]; then \
+    echo "I am in if."; \
+    pecl install mcrypt-1.0.1; \
+    docker-php-ext-enable mcrypt; \
+    else \
+    echo $PHP_VERSION; \
+    echo "I am in else."; \
+    docker-php-ext-install mcrypt; \
+    fi;
 
 COPY ./templates/core-php.ini /usr/local/etc/php/conf.d/core-php.ini
 
@@ -70,6 +85,8 @@ WORKDIR /etc/supervisor
 
 COPY ./templates/supervisord.conf conf.d/super.conf
 ENTRYPOINT ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/super.conf"]
+
+EXPOSE 80 443
 
 COPY ./app/index.php /var/www/web/index.php
 

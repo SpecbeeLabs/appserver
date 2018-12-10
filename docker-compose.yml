@@ -1,11 +1,16 @@
 version: '3'
 services:
   web:
-    build: .
+    container_name: appserver-${PHP_BASE_IMAGE}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PHP_BASE_IMAGE: ${PHP_BASE_IMAGE}
     restart: always
     ports:
-      - "8000-8080:80"
-    volumes: 
+      - "8000:80"
+    volumes:
       - ./app:/var/www/web
     depends_on:
       - database
@@ -14,7 +19,7 @@ services:
   database:
     image: specbee/mariadb:latest
     ports:
-      - "3310-3380:3306"
+      - "3310:3306"
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
