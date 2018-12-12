@@ -1,4 +1,4 @@
-ARG PHP_BASE_IMAGE
+ARG PHP_BASE_IMAGE=7.1-fpm
 FROM php:${PHP_BASE_IMAGE}
 
 ARG PHP_BASE_IMAGE
@@ -62,12 +62,10 @@ RUN echo $PHP_VERSION
 
 # mcrypt moved to pecl in PHP 7.2
 RUN if [ "$PHP_VERSION" = "7.2-fpm" ]; then \
-    echo "I am in if."; \
     pecl install mcrypt-1.0.1; \
     docker-php-ext-enable mcrypt; \
     else \
     echo $PHP_VERSION; \
-    echo "I am in else."; \
     docker-php-ext-install mcrypt; \
     fi;
 
@@ -88,9 +86,7 @@ ENTRYPOINT ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/super.co
 
 EXPOSE 80 443
 
-COPY ./app/index.php /var/www/web/index.php
-
-WORKDIR /var/www/web
+WORKDIR /var/www
 
 RUN apt-get -y clean \
     && apt-get -y autoclean \
